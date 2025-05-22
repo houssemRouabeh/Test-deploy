@@ -1,0 +1,670 @@
+<main class="main-content">
+  <div class="campaign-dashboard">
+    <div class="user-management-header">
+      <h2 class="campaign-title">Gestion des campagnes</h2>
+      <button
+        class="add-account-button"
+        onclick="window.location.href='/manager/dashboard/gestion-campagnes/create'"
+      >
+        + Lancer une nouvelle campagne
+      </button>
+    </div>
+
+    <table class="campaign-table">
+      <thead class="campaign-table-head">
+        <tr>
+          <th class="campaign-th">Nom</th>
+          <th class="campaign-th">Description</th>
+          <th class="campaign-th">Image</th>
+          <th class="campaign-th">Arbres</th>
+          <th class="campaign-th">Chef de projet</th>
+          <th class="campaign-th">Date</th>
+          <th class="campaign-th">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="campaign-table-body">
+        <% campagnes.forEach(campagne => { %>
+        <tr class="campaign-row">
+          <td class="campaign-td"><%= campagne.name %></td>
+          <td class="campaign-td description-cell">
+            <%= campagne.description %>
+          </td>
+
+          <td class="campaign-td">
+            <% if (campagne.image) { %>
+            <img
+              class="campaign-img-thumbnail"
+              src="/img/<%= campagne.image %>"
+              alt="Image campagne"
+            />
+            <% } else { %>
+            <em class="campaign-no-img">Aucune</em>
+            <% } %>
+          </td>
+
+          <td class="campaign-td">
+            <button
+              class="view-trees-btn"
+              onclick="showCampaignTrees(<%= campagne.id %>)"
+            >
+              Voir les arbres (<%= campagne.trees?.length || 0 %>)
+            </button>
+          </td>
+
+          <td class="campaign-td">
+            <%= campagne.projectLeader?.firstName || 'Non attribué' %>
+          </td>
+          <td class="campaign-td">
+            <%= campagne.createdAt.toLocaleDateString() %>
+          </td>
+
+          <td class="campaign-td action-buttons">
+            <button
+              class="action-edit"
+              onclick="openEditModal(<%= JSON.stringify(campagne) %>)"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+            <button
+              class="action-delete"
+              onclick="confirmDelete(<%= campagne.id %>)"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal pour les arbres de la campagne -->
+  <div id="treesModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('treesModal')">&times;</span>
+      <h3>Arbres de la campagne</h3>
+      <div id="treesError"></div>
+      <div id="treesListContainer"></div>
+    </div>
+  </div>
+  <!-- Modal d'édition -->
+  <div id="editCampaignModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('editCampaignModal')"
+        >&times;</span
+      >
+      <h3>Modifier la campagne</h3>
+      <form id="editCampaignForm" enctype="multipart/form-data">
+        <input type="hidden" id="editCampaignId" name="id" />
+
+        <div class="form-group">
+          <label for="editName">Nom</label>
+          <input type="text" id="editName" name="name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="editDescription">Description</label>
+          <textarea
+            id="editDescription"
+            name="description"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="editImage">Nouvelle image</label>
+          <input type="file" id="editImage" name="image" accept="image/*" />
+          <div id="currentImagePreview" class="image-preview"></div>
+        </div>
+
+        <button type="submit" class="submit-button">Enregistrer</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<style>
+  /* Styles généraux améliorés */
+  .main-content {
+    padding: 20px;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+  }
+
+  /* En-tête du tableau */
+  .user-management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .campaign-title {
+    font-size: 24px;
+    color: #18534f;
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .add-account-button {
+    background-color: #5a6c5b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .add-account-button:hover {
+    background-color: #465445;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Tableau principal */
+  .campaign-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e3cd8b;
+  }
+
+  .campaign-table-head {
+    background-color: #18534f;
+    color: #e3cd8b;
+  }
+
+  .campaign-th {
+    padding: 15px 20px;
+    text-align: left;
+    font-weight: 600;
+    position: relative;
+  }
+
+  .campaign-th:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 1px;
+    background-color: rgba(227, 205, 139, 0.3);
+  }
+
+  .campaign-row {
+    transition: background-color 0.2s ease;
+  }
+
+  .campaign-row:hover {
+    background-color: #f8f9fa;
+  }
+
+  .campaign-td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+  }
+
+  /* Cellules spécifiques */
+  .description-cell {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #5a6c5b;
+  }
+
+  /* Image */
+  .campaign-img-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e3cd8b;
+  }
+
+  .campaign-img-thumbnail:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .campaign-no-img {
+    color: #95a5a6;
+    font-size: 0.9em;
+    font-style: italic;
+  }
+
+  /* Bouton Voir les arbres */
+  .view-trees-btn {
+    background-color: #5a6c5b;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .view-trees-btn:hover {
+    background-color: #465445;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Actions */
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .action-edit,
+  .action-delete {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .action-edit {
+    background-color: #e3cd8b;
+    color: #18534f;
+  }
+
+  .action-edit:hover {
+    background-color: #d4bc7a;
+    transform: rotate(10deg) scale(1.1);
+  }
+
+  .action-delete {
+    background-color: #e53935;
+    color: white;
+  }
+
+  .action-delete:hover {
+    background-color: #c62828;
+    transform: scale(1.1);
+  }
+
+  /* Modal des arbres - Styles améliorés */
+  #treesModal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+
+  #treesModal .modal-content {
+    background: white;
+    margin: 5% auto;
+    padding: 25px;
+    width: 80%;
+    max-width: 900px;
+    border-radius: 12px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    border: 2px solid #e3cd8b;
+    position: relative;
+  }
+
+  #treesModal h3 {
+    color: #18534f;
+    margin-top: 0;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e3cd8b;
+    font-size: 1.8rem;
+  }
+
+  .trees-table-container {
+    max-height: 65vh;
+    overflow-y: auto;
+    margin-top: 20px;
+  }
+
+  .trees-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+  }
+
+  .trees-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .trees-table th {
+    background-color: #18534f;
+    color: #e3cd8b;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+  }
+
+  .trees-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #5a6c5b;
+  }
+
+  .trees-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .trees-table tr:hover {
+    background-color: #f1f1f1;
+  }
+
+  .tree-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+  }
+
+  .tree-status-planted {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  .tree-status-pending {
+    background-color: #fff8e1;
+    color: #ff8f00;
+  }
+
+  .tree-status-cancelled {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+
+  .trees-table-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e3cd8b;
+    text-align: right;
+    font-style: italic;
+    color: #5a6c5b;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .campaign-table {
+      display: block;
+      overflow-x: auto;
+    }
+
+    .user-management-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    #treesModal .modal-content {
+      width: 95%;
+      padding: 15px;
+    }
+  }
+
+  /* Animation pour le modal */
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  #treesModal.show {
+    display: block;
+  }
+
+  #treesModal.show .modal-content {
+    animation: modalFadeIn 0.3s ease-out;
+  }
+
+  /* Bouton fermer */
+  .close {
+    position: absolute;
+    right: 25px;
+    top: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #18534f;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+
+  .close:hover {
+    color: #e3cd8b;
+  }
+
+  /* Message quand il n'y a pas d'arbres */
+  .no-trees-message {
+    text-align: center;
+    padding: 30px;
+    color: #95a5a6;
+    font-style: italic;
+  }
+
+  /* Message d'erreur */
+  #treesError {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+</style>
+
+<script>
+  // Fonctions pour gérer les modals
+  function showImageModal(src) {
+    const modal = document.getElementById("imageModal");
+    const img = document.getElementById("expandedImage");
+    img.src = src;
+    modal.style.display = "block";
+  }
+  // Modifiez la fonction showCampaignTrees comme suit :
+  async function showCampaignTrees(campaignId) {
+    const modal = document.getElementById("treesModal");
+    const content = document.getElementById("treesListContainer");
+    const errorDiv = document.getElementById("treesError");
+
+    // Afficher le loader
+    content.innerHTML = '<div class="loader">Chargement des arbres...</div>';
+    errorDiv.textContent = "";
+    modal.style.display = "block";
+
+    try {
+      const response = await fetch(`/api/campaigns/${campaignId}/trees`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Erreur lors du chargement des arbres"
+        );
+      }
+
+      if (!result.success || !result.data || result.data.length === 0) {
+        content.innerHTML = `
+        <div class="no-trees-message">
+          <i class="fas fa-tree" style="font-size: 2em; color: #95a5a6; margin-bottom: 10px;"></i>
+          <p>Aucun arbre dans cette campagne</p>
+        </div>
+      `;
+        return;
+      }
+
+      // Afficher les arbres groupés avec un style amélioré
+      content.innerHTML = `
+      <div class="trees-container">
+        <div class="trees-header">
+          <h4>Liste des arbres (${result.data.length})</h4>
+        </div>
+        <div class="trees-scrollable">
+          <table class="trees-table">
+            <thead>
+              <tr>
+                <th class="text-left">Nom</th>
+                <th class="text-right">Prix unitaire</th>
+                <th class="text-center">Quantité</th>
+                <th class="text-left">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${result.data
+                .map(
+                  (tree) => `
+                <tr class="tree-row">
+                  <td class="text-left">${tree.name || "-"}</td>
+                  <td class="text-right">${
+                    tree.price ? tree.price + "€" : "-"
+                  }</td>
+                  <td class="text-center">${tree.quantity || "0"}</td>
+                  <td class="text-left">
+                    <span class="status-badge ${getStatusClass(tree.statuses)}">
+                      ${tree.statuses || "Non spécifié"}
+                    </span>
+                  </td>
+                </tr>
+              `
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    } catch (error) {
+      console.error("Erreur:", error);
+      errorDiv.innerHTML = `
+      <div class="error-message">
+        <i class="fas fa-exclamation-triangle"></i>
+        ${error.message}
+      </div>
+    `;
+      content.innerHTML = "";
+    }
+  }
+
+  // Helper function pour les classes de statut
+  function getStatusClass(status) {
+    if (!status) return "status-default";
+    const statusLower = status.toLowerCase();
+
+    if (statusLower.includes("planté")) return "status-success";
+    if (statusLower.includes("en attente")) return "status-warning";
+    if (statusLower.includes("annulé") || statusLower.includes("rejeté"))
+      return "status-danger";
+
+    return "status-default";
+  }
+
+  function openEditModal(campaign) {
+    document.getElementById("editCampaignId").value = campaign.id;
+    document.getElementById("editName").value = campaign.name;
+    document.getElementById("editDescription").value = campaign.description;
+
+    const preview = document.getElementById("currentImagePreview");
+    if (campaign.image) {
+      preview.innerHTML = `
+        <p>Image actuelle:</p>
+        <img src="/uploads/${campaign.image}" style="max-width: 200px;">
+      `;
+    } else {
+      preview.innerHTML = "<p>Aucune image actuelle</p>";
+    }
+
+    document.getElementById("editCampaignModal").style.display = "block";
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).style.display = "none";
+  }
+
+  function confirmDelete(campaignId) {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette campagne ?")) {
+      fetch(`/manager/campaigns/${campaignId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((response) => {
+        if (response.ok) {
+          location.reload();
+        } else {
+          alert("Erreur lors de la suppression");
+        }
+      });
+    }
+  }
+
+  // Gestion du formulaire d'édition
+  document
+    .getElementById("editCampaignForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+
+      fetch("/manager/campaigns/update", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert(data.error || "Erreur lors de la mise à jour");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Erreur lors de l'envoi du formulaire");
+        });
+    });
+</script>

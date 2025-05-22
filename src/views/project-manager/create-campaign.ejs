@@ -1,0 +1,65 @@
+<main class="main-content">
+  <div class="create-campaign">
+    <h2 class="create-campaign-title">Créer une nouvelle campagne</h2>
+
+    <form
+      action="/manager/campaigns/create"
+      method="POST"
+      enctype="multipart/form-data"
+      class="create-campaign-form"
+      id="campaignForm"
+    >
+      <div class="form-group">
+        <label for="name">Nom de la campagne :</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Nom de la campagne"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="image">Image de la campagne :</label>
+        <input type="file" id="image" name="image" accept="image/*" />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description :</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="4"
+          required
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <button type="button" id="selectTreesBtn" class="tree-selection-btn">
+          Sélectionner les arbres
+        </button>
+        <div id="selectedTreesPreview"></div>
+        <input type="hidden" name="selectedTreesData" id="selectedTreesData" />
+      </div>
+
+      <button type="submit" class="submit-button">Créer la campagne</button>
+    </form>
+  </div>
+
+  <!-- Modal de sélection des arbres -->
+  <div id="treeSelectionModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Sélectionnez les arbres</h3>
+      <div id="treeListContainer">
+        <!-- Les arbres seront chargés ici via JavaScript -->
+      </div>
+      <button id="confirmSelection" class="submit-button">
+        Confirmer la sélection
+      </button>
+    </div>
+  </div>
+</main>
+
+<script src="/js/campaignManagement.js"></script>

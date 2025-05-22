@@ -1,0 +1,127 @@
+<div class="profile-container">
+  <h2 class="profile-title">Mon Profil</h2>
+  <p class="account-creation">
+    Compte créé le :
+    <strong><%= new Date(user.createdAt).toLocaleDateString('fr-FR') %></strong>
+  </p>
+
+  <form class="profile-form" action="/user/profile/update" method="POST">
+    <!-- Section Avatar -->
+    <div class="avatar-section">
+      <div class="current-avatar">
+        <h3>Votre avatar actuel</h3>
+        <img
+          src="/img/avatars/<%= user.avatar ? user.avatar : 'default.png' %>"
+          alt="Avatar actuel"
+          class="selected-avatar"
+        />
+      </div>
+
+      <h3>Choisir un nouvel avatar</h3>
+      <div class="avatar-grid">
+        <% ['avatar1', 'avatar2', 'avatar3', 'avatar4',
+        'avatar5','avatar6','avatar7','avatar8','avatar9','avatar10'].forEach((avatar,
+        index) => { %>
+        <label
+          class="avatar-option <%= user.avatar === `${avatar}.jpg` ? 'selected' : '' %>"
+        >
+          <input type="radio" name="avatar" value="<%= avatar %>.jpg" <%=
+          user.avatar === `${avatar}.jpg` ? 'checked' : '' %> >
+          <img
+            src="/img/avatars/<%= avatar %>.jpg"
+            alt="Avatar <%= index+1 %>"
+          />
+        </label>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Informations utilisateur -->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="firstName">Prénom</label>
+        <input
+          type="text"
+          id="firstName"
+          name="firstName"
+          value="<%= user.firstName || '' %>"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">Nom</label>
+        <input
+          type="text"
+          id="lastName"
+          name="lastName"
+          value="<%= user.lastName || '' %>"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value="<%= user.email %>"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="telephone">Téléphone</label>
+        <input
+          type="tel"
+          id="telephone"
+          name="telephone"
+          value="<%= user.telephone || '' %>"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="birthday">Date de naissance</label>
+        <input
+          type="date"
+          id="birthday"
+          name="birthday"
+          value="<%= user.birthday ? new Date(user.birthday).toISOString().split('T')[0] : '' %>"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="locality">Localité</label>
+        <input
+          type="text"
+          id="locality"
+          name="locality"
+          value="<%= user.locality || '' %>"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Nouveau mot de passe</label>
+      <input type="password" id="password" name="password" />
+      <small class="form-hint">Minimum 8 caractères</small>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="update-button">
+        <svg class="sidebar-icon" width="20" height="20" viewBox="0 0 512 512">
+          <path
+            fill="white"
+            d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160L0 416c0 53 43 96 96 96l256 0c53 0 96-43 96-96l0-96c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7-14.3 32-32 32L96 448c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 64z"
+          />
+        </svg>
+        <span>Mettre à jour</span>
+      </button>
+    </div>
+  </form>
+</div>
