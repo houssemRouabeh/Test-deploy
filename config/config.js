@@ -19,4 +19,20 @@ export default {
       freezeTableName: true,
     },
   },
+  production: {
+    use_env_variable: "DATABASE_URL",
+    dialect: "postgres",
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // Nécessaire pour Render
+      },
+    },
+    logging: false,
+    define: {
+      timestamps: true,
+      underscored: false,
+      freezeTableName: true,
+    },
+  },
 };
