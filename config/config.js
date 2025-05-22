@@ -25,7 +25,7 @@ export default {
     dialectOptions: {
       ssl: {
         require: true,
-        rejectUnauthorized: false, // Nécessaire pour Render
+        rejectUnauthorized: false,
       },
     },
     logging: false,
